@@ -29,7 +29,7 @@
         // events
         btnRepos.addEventListener("click", getRepos)
         btnIssues.addEventListener("click", getIssues)
-        btnCommits.addEventListener("click", getCommits)
+        btnCommits.addEventListener("click", e=> getCommits())
 
 
         // start of functions
@@ -83,11 +83,10 @@
 
         // section 3: Search commits
         //searchCommits start
-        async function getCommits() {
+        async function getCommits(url = "https://api.github.com/search/commits?q=repo:freecodecamp/freecodecamp author-date:2021-10-01..2021-10-05") {
+            //we passed a default parameter for our url and gave it the value of the github api repo/commit search
             clear();
             // alert("testing boilerplate")
-            const url = "https://api.github.com/search/commits?q=repo:freecodecamp/freecodecamp author-date:2021-10-01..2021-10-05"
-            // stars being the parameter ":" is the separator for the parameter and its value, the 100000.
             const headers = {
                 "Accept" : "application/vnd.github.cloak-preview"
             }
@@ -95,6 +94,16 @@
                 "method" : "GET",
                 "headers" : headers
             })
+
+            const link = response.headers.get("link")
+            const links = link.split(",")
+            const urls = links.map(a=> {
+                return{
+                    url: a.split(";")[0].replace(">","").replace("<",""),
+                    title: a.split(";")[1]
+                }
+            })
+
             const result = await response.json()
             // querystring vs resource parameter
             // console.log(result)
@@ -113,19 +122,15 @@
                 divResult.appendChild(document.createElement("br"))
 
             })
+
+            urls.forEach(u => {
+                const btn = document.createElement("button")
+                btn.textContent = u.title;
+                btn.addEventListener("click", e=> getCommits(u.url))
+                divResult.appendChild(btn)
+            })
+
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
         // clear function start
         function clear() {
